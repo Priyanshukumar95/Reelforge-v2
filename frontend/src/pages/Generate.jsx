@@ -1,34 +1,41 @@
 import { useState } from "react";
 
-const EDIT_SUGGESTIONS = [
-  "Add bold captions, fast cuts and viral music",
-  "Make it educational with clean text overlays",
-  "Add meme transitions and funny sound effects",
-  "Make it news style with professional tone",
-  "Add zoom effects on key moments and trim pauses",
+const STYLES = [
+  { id: "viral", label: "🔥 Viral", desc: "Fast cuts, trending" },
+  { id: "cinematic", label: "🎬 Cinematic", desc: "Dark, dramatic" },
+  { id: "educational", label: "📚 Educational", desc: "Clean, informative" },
+  { id: "motivational", label: "💪 Motivational", desc: "Energy, music" },
 ];
 
 const EFFECTS = [
   { id: "captions", label: "💬 Captions" },
   { id: "music", label: "🎵 Music" },
-  { id: "filter", label: "🎨 Filter" },
-  { id: "speed", label: "⚡ Speed" },
   { id: "zoom", label: "🔍 Zoom" },
   { id: "trim", label: "✂️ Trim" },
+  { id: "filter", label: "🎨 Filter" },
+  { id: "speed", label: "⚡ Speed" },
 ];
 
 const DURATIONS = ["15s", "30s", "60s"];
 
+const STEPS = [
+  { id: "search", label: "Searching YouTube", icon: "🔍" },
+  { id: "download", label: "Downloading clips", icon: "📥" },
+  { id: "analyse", label: "Analysing prompt", icon: "🤖" },
+  { id: "effects", label: "Applying effects", icon: "🎨" },
+  { id: "render", label: "Rendering video", icon: "🎬" },
+  { id: "done", label: "Video ready!", icon: "✅" },
+];
+
 export default function Generate() {
   const [topic, setTopic] = useState("");
   const [prompt, setPrompt] = useState("");
-  const [effects, setEffects] = useState(["captions"]);
+  const [style, setStyle] = useState("viral");
+  const [effects, setEffects] = useState(["captions", "music"]);
   const [duration, setDuration] = useState("30s");
   const [status, setStatus] = useState("idle");
-  // idle | fetching | editing | done | error
-  const [progress, setProgress] = useState(0);
-  const [progressLabel, setProgressLabel] = useState("");
-  const [resultVideo, setResultVideo] = useState(null);
+  const [currentStep, setCurrentStep] = useState(-1);
+  const [videoUrl, setVideoUrl] = useState("");
   const [logs, setLogs] = useState([]);
 
   const toggleEffect = (id) => {
@@ -37,75 +44,45 @@ export default function Generate() {
     );
   };
 
-  const addLog = (msg) => setLogs((prev) => [...prev, msg]);
+  const addLog = (msg) =>
+    setLogs((prev) => [
+      ...prev,
+      { msg, time: new Date().toLocaleTimeString() },
+    ]);
 
   const handleGenerate = async () => {
     if (!topic || !prompt) return;
 
-    setStatus("fetching");
-    setProgress(0);
+    setStatus("loading");
+    setCurrentStep(0);
     setLogs([]);
-    setResultVideo(null);
+    setVideoUrl("");
 
     try {
-      // STEP 1 — Fetch YouTube video
-      addLog("🔍 Searching YouTube for: " + topic);
-      setProgressLabel("Fetching from YouTube...");
-      setProgress(10);
+      addLog("Searching YouTube for: " + topic);
+      setCurrentStep(0);
 
-      const fetchRes = await fetch("/api/generate/youtube", {
+      const interval = setInterval(() => {
+        setCurrentStep((prev) => {
+          if (prev < STEPS.length - 2) {
+            addLog(STEPS[prev + 1]?.label || "");
+            return prev + 1;
+          }
+          return prev;
+        });
+      }, 2500);
+
+      const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, prompt, effects, duration }),
+        body: JSON.stringify({ topic, prompt, style, effects, duration }),
       });
 
-      if (!fetchRes.ok) throw new Error("Failed to fetch video");
-
-      const fetchData = await fetchRes.json();
-      addLog("✅ Found video: " + fetchData.title);
-      addLog("📥 Downloading...");
-      setProgress(30);
-
-      // STEP 2 — Wait for editing
-      setStatus("editing");
-      setProgressLabel("AI is editing your video...");
-      addLog("🤖 Analysing prompt: " + prompt);
-      setProgress(50);
-
-      // Poll for job status
-      let done = false;
-      let attempts = 0;
-      while (!done && attempts < 30) {
-        await new Promise((r) => setTimeout(r, 2000));
-        attempts++;
-
-        const statusRes = await fetch(
-          `/api/generate/status/${fetchData.job_id}`
-        );
-        const statusData = await statusRes.json();
-
-        if (statusData.status === "applying_effects") {
-          addLog("🎨 Applying effects: " + effects.join(", "));
-          setProgress(60);
-        }
-        if (statusData.status === "rendering") {
-          addLog("🎬 Rendering final video...");
-          setProgressLabel("Rendering...");
-          setProgress(80);
-        }
-        if (statusData.status === "done") {
-          setProgress(100);
-          setProgressLabel("Done!");
-          addLog("✅ Video ready!");
-          setResultVideo(statusData.video_url);
-          done = true;
-        }
-        if (statusData.status === "error") {
-          throw new Error(statusData.message || "Processing failed");
-        }
-      }
-
-      if (!done) throw new Error("Timeout — took too long");
+      const data = await res.json();
+      clearInterval(interval);
+      setCurrentStep(STEPS.length - 1);
+      addLog("Video ready!");
+      setVideoUrl(data.videoUrl);
       setStatus("done");
     } catch (err) {
       addLog("❌ Error: " + err.message);
@@ -114,53 +91,178 @@ export default function Generate() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#050508",
+        fontFamily: "'Syne', sans-serif",
+        padding: "28px 32px",
+        color: "#f0eeff",
+      }}
+    >
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-cyan-400">
+      <div style={{ marginBottom: 28 }}>
+        <h1
+          style={{
+            fontSize: 26,
+            fontWeight: 700,
+            color: "#f0eeff",
+            letterSpacing: "-0.5px",
+            marginBottom: 4,
+          }}
+        >
           🚀 AI Video Generator
         </h1>
-        <p className="text-gray-500 mt-1 text-sm">
-          Type a topic → AI fetches from YouTube → Edits it → Ready to post
+        <p style={{ color: "#6b6b8a", fontSize: 14 }}>
+          Type a topic → AI searches YouTube → Downloads clips → Edits
+          automatically
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-8">
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 24,
+        }}
+      >
         {/* LEFT — Controls */}
-        <div className="space-y-6">
-          {/* Topic Input */}
-          <div>
-            <label className="text-gray-400 text-sm block mb-2 font-medium">
-              🔍 Topic to search on YouTube
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Topic */}
+          <div
+            style={{
+              background: "#0d0d14",
+              border: "1px solid rgba(120,80,255,0.15)",
+              borderRadius: 12,
+              padding: 20,
+            }}
+          >
+            <label
+              style={{
+                fontSize: 11,
+                color: "#6b6b8a",
+                letterSpacing: "1.5px",
+                fontWeight: 600,
+                display: "block",
+                marginBottom: 10,
+              }}
+            >
+              🔍 YOUTUBE TOPIC
             </label>
             <input
               type="text"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g. crypto news, AI trends, fitness tips..."
-              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500 placeholder-gray-600"
+              placeholder="e.g. crypto news, fitness tips, AI trends..."
+              style={{
+                width: "100%",
+                background: "#13131e",
+                border: "1px solid rgba(124,77,255,0.2)",
+                borderRadius: 8,
+                padding: "12px 14px",
+                color: "#f0eeff",
+                fontSize: 14,
+                outline: "none",
+                boxSizing: "border-box",
+              }}
             />
+            {/* Quick topics */}
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 6,
+                marginTop: 10,
+              }}
+            >
+              {[
+                "crypto news",
+                "AI trends",
+                "fitness tips",
+                "success mindset",
+                "tech 2025",
+              ].map((t) => (
+                <span
+                  key={t}
+                  onClick={() => setTopic(t)}
+                  style={{
+                    fontSize: 11,
+                    color: "#a78bfa",
+                    background: "rgba(124,77,255,0.08)",
+                    border: "1px solid rgba(124,77,255,0.2)",
+                    borderRadius: 20,
+                    padding: "3px 10px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
           </div>
 
-          {/* Prompt Input */}
-          <div>
-            <label className="text-gray-400 text-sm block mb-2 font-medium">
-              ✍️ How should AI edit it?
+          {/* Prompt */}
+          <div
+            style={{
+              background: "#0d0d14",
+              border: "1px solid rgba(120,80,255,0.15)",
+              borderRadius: 12,
+              padding: 20,
+            }}
+          >
+            <label
+              style={{
+                fontSize: 11,
+                color: "#6b6b8a",
+                letterSpacing: "1.5px",
+                fontWeight: 600,
+                display: "block",
+                marginBottom: 10,
+              }}
+            >
+              ✍️ EDIT PROMPT
             </label>
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="e.g. Add bold captions, make it viral, speed up slow parts, add trending music..."
-              rows={4}
-              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm resize-none focus:outline-none focus:border-cyan-500 placeholder-gray-600"
+              placeholder="e.g. Add bold captions, fast cuts, viral music, trim pauses..."
+              rows={3}
+              style={{
+                width: "100%",
+                background: "#13131e",
+                border: "1px solid rgba(124,77,255,0.2)",
+                borderRadius: 8,
+                padding: "12px 14px",
+                color: "#f0eeff",
+                fontSize: 14,
+                outline: "none",
+                resize: "none",
+                boxSizing: "border-box",
+              }}
             />
             {/* Suggestions */}
-            <div className="mt-2 space-y-1">
-              {EDIT_SUGGESTIONS.map((s, i) => (
+            <div style={{ marginTop: 8 }}>
+              {[
+                "Add bold captions and fast viral cuts",
+                "Cinematic dark theme with dramatic music",
+                "Educational clean style with text overlays",
+              ].map((s) => (
                 <p
-                  key={i}
+                  key={s}
                   onClick={() => setPrompt(s)}
-                  className="text-xs text-gray-600 hover:text-cyan-400 cursor-pointer transition-colors"
+                  style={{
+                    fontSize: 11,
+                    color: "#6b6b8a",
+                    cursor: "pointer",
+                    padding: "3px 0",
+                    borderBottom: "1px solid rgba(255,255,255,0.03)",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "#a78bfa")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "#6b6b8a")
+                  }
                 >
                   → {s}
                 </p>
@@ -168,43 +270,153 @@ export default function Generate() {
             </div>
           </div>
 
-          {/* Effects */}
-          <div>
-            <label className="text-gray-400 text-sm block mb-3 font-medium">
-              ⚙️ Effects
+          {/* Style */}
+          <div
+            style={{
+              background: "#0d0d14",
+              border: "1px solid rgba(120,80,255,0.15)",
+              borderRadius: 12,
+              padding: 20,
+            }}
+          >
+            <label
+              style={{
+                fontSize: 11,
+                color: "#6b6b8a",
+                letterSpacing: "1.5px",
+                fontWeight: 600,
+                display: "block",
+                marginBottom: 10,
+              }}
+            >
+              🎨 VIDEO STYLE
             </label>
-            <div className="grid grid-cols-3 gap-2">
-              {EFFECTS.map((ef) => (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 8,
+              }}
+            >
+              {STYLES.map((s) => (
                 <div
-                  key={ef.id}
-                  onClick={() => toggleEffect(ef.id)}
-                  className={`p-3 rounded-xl border cursor-pointer text-center transition-all ${
-                    effects.includes(ef.id)
-                      ? "border-cyan-500 bg-cyan-500/10 text-cyan-400"
-                      : "border-gray-700 bg-gray-900 text-gray-400 hover:border-gray-500"
-                  }`}
+                  key={s.id}
+                  onClick={() => setStyle(s.id)}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 8,
+                    border:
+                      style === s.id
+                        ? "1px solid rgba(124,77,255,0.5)"
+                        : "1px solid rgba(255,255,255,0.06)",
+                    background:
+                      style === s.id ? "rgba(124,77,255,0.1)" : "#13131e",
+                    cursor: "pointer",
+                  }}
                 >
-                  <p className="text-xs font-semibold">{ef.label}</p>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: style === s.id ? "#a78bfa" : "#f0eeff",
+                    }}
+                  >
+                    {s.label}
+                  </p>
+                  <p style={{ fontSize: 11, color: "#6b6b8a", marginTop: 2 }}>
+                    {s.desc}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Duration */}
-          <div>
-            <label className="text-gray-400 text-sm block mb-3 font-medium">
-              ⏱️ Output Duration
+          {/* Effects + Duration */}
+          <div
+            style={{
+              background: "#0d0d14",
+              border: "1px solid rgba(120,80,255,0.15)",
+              borderRadius: 12,
+              padding: 20,
+            }}
+          >
+            <label
+              style={{
+                fontSize: 11,
+                color: "#6b6b8a",
+                letterSpacing: "1.5px",
+                fontWeight: 600,
+                display: "block",
+                marginBottom: 10,
+              }}
+            >
+              ⚙️ EFFECTS
             </label>
-            <div className="flex gap-3">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 6,
+                marginBottom: 16,
+              }}
+            >
+              {EFFECTS.map((ef) => (
+                <div
+                  key={ef.id}
+                  onClick={() => toggleEffect(ef.id)}
+                  style={{
+                    padding: "8px",
+                    borderRadius: 8,
+                    border: effects.includes(ef.id)
+                      ? "1px solid rgba(0,229,160,0.4)"
+                      : "1px solid rgba(255,255,255,0.06)",
+                    background: effects.includes(ef.id)
+                      ? "rgba(0,229,160,0.08)"
+                      : "#13131e",
+                    cursor: "pointer",
+                    textAlign: "center",
+                    fontSize: 12,
+                    color: effects.includes(ef.id) ? "#00e5a0" : "#9898b8",
+                    fontWeight: effects.includes(ef.id) ? 600 : 400,
+                  }}
+                >
+                  {ef.label}
+                </div>
+              ))}
+            </div>
+
+            <label
+              style={{
+                fontSize: 11,
+                color: "#6b6b8a",
+                letterSpacing: "1.5px",
+                fontWeight: 600,
+                display: "block",
+                marginBottom: 8,
+              }}
+            >
+              ⏱️ DURATION
+            </label>
+            <div style={{ display: "flex", gap: 8 }}>
               {DURATIONS.map((d) => (
                 <button
                   key={d}
                   onClick={() => setDuration(d)}
-                  className={`flex-1 py-2 rounded-xl border text-sm font-semibold transition-all ${
-                    duration === d
-                      ? "border-cyan-500 bg-cyan-500/10 text-cyan-400"
-                      : "border-gray-700 bg-gray-900 text-gray-400 hover:border-gray-500"
-                  }`}
+                  style={{
+                    flex: 1,
+                    padding: "8px",
+                    borderRadius: 8,
+                    border:
+                      duration === d
+                        ? "1px solid rgba(124,77,255,0.5)"
+                        : "1px solid rgba(255,255,255,0.06)",
+                    background:
+                      duration === d ? "rgba(124,77,255,0.1)" : "#13131e",
+                    color: duration === d ? "#a78bfa" : "#9898b8",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
                 >
                   {d}
                 </button>
@@ -215,96 +427,223 @@ export default function Generate() {
           {/* Generate Button */}
           <button
             onClick={handleGenerate}
-            disabled={
-              !topic || !prompt || status === "fetching" || status === "editing"
-            }
-            className="w-full py-4 rounded-xl font-bold text-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500"
+            disabled={!topic || !prompt || status === "loading"}
+            style={{
+              width: "100%",
+              padding: "16px",
+              borderRadius: 12,
+              border: "none",
+              background:
+                !topic || !prompt || status === "loading"
+                  ? "rgba(124,77,255,0.3)"
+                  : "linear-gradient(135deg, #7c4dff, #00d4ff)",
+              color: "#fff",
+              fontSize: 16,
+              fontWeight: 700,
+              cursor:
+                !topic || !prompt || status === "loading"
+                  ? "not-allowed"
+                  : "pointer",
+              boxShadow:
+                status !== "loading" ? "0 0 30px rgba(124,77,255,0.3)" : "none",
+              transition: "all 0.2s",
+            }}
           >
-            {status === "fetching" && "🔍 Fetching from YouTube..."}
-            {status === "editing" && "🤖 AI Editing..."}
-            {(status === "idle" || status === "done" || status === "error") &&
-              "🚀 Generate Video"}
+            {status === "loading" ? "⚙️ AI is working..." : "🚀 Generate Video"}
           </button>
         </div>
 
         {/* RIGHT — Output */}
-        <div className="space-y-6">
-          {/* Progress */}
-          {(status === "fetching" || status === "editing") && (
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <div className="flex justify-between mb-3">
-                <p className="text-sm font-semibold text-gray-300">
-                  {progressLabel}
-                </p>
-                <p className="text-cyan-400 font-bold">{progress}%</p>
-              </div>
-              <div className="w-full bg-gray-800 rounded-full h-3 mb-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Steps Progress */}
+          <div
+            style={{
+              background: "#0d0d14",
+              border: "1px solid rgba(120,80,255,0.15)",
+              borderRadius: 12,
+              padding: 20,
+            }}
+          >
+            <label
+              style={{
+                fontSize: 11,
+                color: "#6b6b8a",
+                letterSpacing: "1.5px",
+                fontWeight: 600,
+                display: "block",
+                marginBottom: 14,
+              }}
+            >
+              📋 PIPELINE STATUS
+            </label>
+            {STEPS.map((step, index) => {
+              const isDone = index < currentStep;
+              const isActive = index === currentStep;
+              const isPending = index > currentStep;
+              return (
                 <div
-                  className="bg-gradient-to-r from-cyan-500 to-purple-500 h-3 rounded-full transition-all duration-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              {/* Live Logs */}
-              <div className="space-y-1 max-h-40 overflow-y-auto">
-                {logs.map((log, i) => (
-                  <p key={i} className="text-xs text-gray-500 font-mono">
-                    {log}
-                  </p>
-                ))}
-              </div>
-            </div>
-          )}
+                  key={step.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "10px 0",
+                    borderBottom:
+                      index < STEPS.length - 1
+                        ? "1px solid rgba(255,255,255,0.03)"
+                        : "none",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 16,
+                      background: isDone
+                        ? "rgba(0,229,160,0.1)"
+                        : isActive
+                        ? "rgba(124,77,255,0.15)"
+                        : "rgba(255,255,255,0.03)",
+                      border: isDone
+                        ? "1px solid rgba(0,229,160,0.3)"
+                        : isActive
+                        ? "1px solid rgba(124,77,255,0.4)"
+                        : "1px solid rgba(255,255,255,0.06)",
+                    }}
+                  >
+                    {step.icon}
+                  </div>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      color: isDone
+                        ? "#00e5a0"
+                        : isActive
+                        ? "#a78bfa"
+                        : "#6b6b8a",
+                      fontWeight: isActive ? 600 : 400,
+                      flex: 1,
+                    }}
+                  >
+                    {step.label}
+                  </span>
+                  {isDone && (
+                    <span style={{ color: "#00e5a0", fontSize: 12 }}>✓</span>
+                  )}
+                  {isActive && (
+                    <span style={{ color: "#a78bfa", fontSize: 11 }}>
+                      processing...
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
-          {/* Error */}
-          {status === "error" && (
-            <div className="bg-red-900/20 rounded-2xl p-6 border border-red-800">
-              <p className="text-red-400 font-bold mb-2">
-                ❌ Something went wrong
-              </p>
-              <div className="space-y-1">
-                {logs.map((log, i) => (
-                  <p key={i} className="text-xs text-gray-500 font-mono">
-                    {log}
-                  </p>
-                ))}
-              </div>
-              <button
-                onClick={() => setStatus("idle")}
-                className="mt-4 w-full py-2 bg-gray-800 hover:bg-gray-700 rounded-xl text-sm"
+          {/* Live Logs */}
+          {logs.length > 0 && (
+            <div
+              style={{
+                background: "#0d0d14",
+                border: "1px solid rgba(120,80,255,0.15)",
+                borderRadius: 12,
+                padding: 20,
+              }}
+            >
+              <label
+                style={{
+                  fontSize: 11,
+                  color: "#6b6b8a",
+                  letterSpacing: "1.5px",
+                  fontWeight: 600,
+                  display: "block",
+                  marginBottom: 10,
+                }}
               >
-                Try Again
-              </button>
+                🖥️ LIVE LOGS
+              </label>
+              <div
+                style={{
+                  maxHeight: 140,
+                  overflowY: "auto",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                }}
+              >
+                {logs.map((log, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      fontSize: 11,
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    <span style={{ color: "#6b6b8a" }}>{log.time}</span>
+                    <span style={{ color: "#9898b8" }}>{log.msg}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Result Video */}
-          {status === "done" && resultVideo && (
-            <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-              <div className="p-4 border-b border-gray-800 flex justify-between items-center">
-                <p className="text-sm font-semibold text-green-400">
+          {/* Video Result */}
+          {status === "done" && videoUrl && (
+            <div
+              style={{
+                background: "#0d0d14",
+                border: "1px solid rgba(0,229,160,0.2)",
+                borderRadius: 12,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  padding: "14px 20px",
+                  borderBottom: "1px solid rgba(0,229,160,0.1)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#00e5a0",
+                  }}
+                >
                   ✅ Video Ready!
-                </p>
-                <span className="text-xs text-gray-500">{duration}</span>
+                </span>
+                <span style={{ fontSize: 11, color: "#6b6b8a" }}>
+                  {duration} · {style}
+                </span>
               </div>
               <video
-                src={resultVideo}
+                src={videoUrl}
                 controls
-                className="w-full max-h-72 bg-black object-contain"
+                style={{ width: "100%", maxHeight: 260, background: "#000" }}
               />
-              <div className="p-4 space-y-3">
-                <div className="text-xs text-gray-500 space-y-1">
-                  <p>
-                    🔍 Topic: <span className="text-white">{topic}</span>
-                  </p>
-                  <p>
-                    ✍️ Prompt: <span className="text-white">{prompt}</span>
-                  </p>
-                  <p>
-                    ⚙️ Effects:{" "}
-                    <span className="text-white">{effects.join(", ")}</span>
-                  </p>
-                </div>
-                <button className="w-full py-3 bg-cyan-600 hover:bg-cyan-500 rounded-xl font-semibold text-sm">
+              <div style={{ padding: 16 }}>
+                <button
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    borderRadius: 8,
+                    border: "none",
+                    background: "linear-gradient(135deg, #7c4dff, #00d4ff)",
+                    color: "#fff",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
                   📤 Send to Review Queue
                 </button>
               </div>
@@ -313,22 +652,81 @@ export default function Generate() {
 
           {/* Idle state */}
           {status === "idle" && (
-            <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800 text-center">
-              <p className="text-5xl mb-4">🎬</p>
-              <p className="text-gray-400 font-semibold">How it works</p>
-              <div className="mt-4 space-y-3 text-left">
-                {[
-                  "1️⃣ Type a topic — AI searches YouTube",
-                  "2️⃣ Best matching video is downloaded",
-                  "3️⃣ Your prompt tells AI how to edit",
-                  "4️⃣ Effects applied automatically",
-                  "5️⃣ Final video ready to post",
-                ].map((step, i) => (
-                  <p key={i} className="text-sm text-gray-500">
-                    {step}
-                  </p>
-                ))}
-              </div>
+            <div
+              style={{
+                background: "#0d0d14",
+                border: "1px solid rgba(120,80,255,0.15)",
+                borderRadius: 12,
+                padding: 32,
+                textAlign: "center",
+              }}
+            >
+              <p style={{ fontSize: 48, marginBottom: 12 }}>🎬</p>
+              <p
+                style={{
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: "#f0eeff",
+                  marginBottom: 8,
+                }}
+              >
+                How it works
+              </p>
+              {[
+                "1️⃣ Type a topic — AI searches YouTube",
+                "2️⃣ Best clips downloaded automatically",
+                "3️⃣ Your prompt guides the AI edit",
+                "4️⃣ Effects & music added",
+                "5️⃣ Final reel ready to post",
+              ].map((s, i) => (
+                <p
+                  key={i}
+                  style={{
+                    fontSize: 13,
+                    color: "#6b6b8a",
+                    padding: "4px 0",
+                    textAlign: "left",
+                  }}
+                >
+                  {s}
+                </p>
+              ))}
+            </div>
+          )}
+
+          {/* Error */}
+          {status === "error" && (
+            <div
+              style={{
+                background: "rgba(255,77,109,0.05)",
+                border: "1px solid rgba(255,77,109,0.2)",
+                borderRadius: 12,
+                padding: 20,
+              }}
+            >
+              <p
+                style={{
+                  color: "#ff4d6d",
+                  fontWeight: 600,
+                  marginBottom: 8,
+                }}
+              >
+                ❌ Generation Failed
+              </p>
+              <button
+                onClick={() => setStatus("idle")}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  background: "#13131e",
+                  color: "#f0eeff",
+                  cursor: "pointer",
+                  fontSize: 13,
+                }}
+              >
+                Try Again
+              </button>
             </div>
           )}
         </div>
