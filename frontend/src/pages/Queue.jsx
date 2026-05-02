@@ -89,7 +89,11 @@ export default function Queue() {
           >
             {/* Video Player */}
             <video
-              src={job.video ? `/${job.video}` : ""}
+              src={
+                job.video_url || job.video
+                  ? `http://localhost:8000/outputs/${job.video}`
+                  : "http://localhost:8000/outputs/test.mp4"
+              }
               controls
               style={{
                 width: 100,
