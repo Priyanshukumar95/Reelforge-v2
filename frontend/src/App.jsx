@@ -6,15 +6,16 @@ import Settings from "./pages/Settings";
 import Generate from "./pages/Generate";
 
 const NAV = [
-  { id: "dashboard", label: "Dashboard", icon: "⬡" },
-  { id: "queue", label: "Queue", icon: "▦" },
-  { id: "editor", label: "Editor", icon: "◈" },
-  { id: "settings", label: "Settings", icon: "⊛" },
+  { id: "dashboard", label: "Dashboard", icon: "⚡" },
+  { id: "queue", label: "Queue", icon: "🎬", badge: 7 },
+  { id: "editor", label: "Editor", icon: "✂️" },
   { id: "generate", label: "Generate", icon: "🚀" },
+  { id: "settings", label: "Settings", icon: "⚙️" },
 ];
 
 export default function App() {
   const [page, setPage] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -36,187 +37,157 @@ export default function App() {
         display: "flex",
         height: "100vh",
         width: "100vw",
-        background: "#050508",
+        background: "#ffffff",
         overflow: "hidden",
-        fontFamily: "'Syne', sans-serif",
+        fontFamily: "'Inter', sans-serif",
       }}
     >
+      {/* ── SIDEBAR ── */}
       <aside
         style={{
-          width: "220px",
+          width: sidebarOpen ? "220px" : "0px",
           flexShrink: 0,
-          background: "#0d0d14",
-          borderRight: "1px solid rgba(120,80,255,0.12)",
+          background: "#ffffff",
+          borderRight: sidebarOpen ? "1px solid #e0e0e0" : "none",
           display: "flex",
           flexDirection: "column",
-          position: "relative",
           overflow: "hidden",
+          transition: "width 0.25s ease",
         }}
       >
+        {/* Logo */}
         <div
           style={{
-            position: "absolute",
-            top: -40,
-            left: -40,
-            width: 160,
-            height: 160,
-            background:
-              "radial-gradient(circle, rgba(124,77,255,0.15) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          style={{
-            padding: "24px 20px 20px",
-            borderBottom: "1px solid rgba(120,80,255,0.12)",
+            padding: "18px 16px",
+            borderBottom: "1px solid #e0e0e0",
+            minWidth: "220px",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                background: "linear-gradient(135deg, #7c4dff, #00d4ff)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 16,
-                fontWeight: 700,
-                color: "#fff",
-                boxShadow: "0 0 20px rgba(124,77,255,0.4)",
-              }}
-            >
-              R
+          <div
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 8,
+              background: "linear-gradient(135deg, #6d28d9, #2563eb)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 14,
+              fontWeight: 800,
+              color: "#fff",
+              flexShrink: 0,
+            }}
+          >
+            R
+          </div>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#111111" }}>
+              ReelForge
             </div>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#f0eeff" }}>
-                ReelForge
-              </div>
-              <div
-                style={{
-                  fontSize: 9,
-                  color: "#6b6b8a",
-                  letterSpacing: "2px",
-                  marginTop: 1,
-                }}
-              >
-                AI STUDIO
-              </div>
+            <div
+              style={{ fontSize: 9, color: "#999999", letterSpacing: "1.5px" }}
+            >
+              AI STUDIO
             </div>
           </div>
         </div>
-        <nav style={{ flex: 1, padding: "16px 12px" }}>
-          {NAV.map((n) => {
-            const active = page === n.id;
+
+        {/* Nav Items */}
+        <nav style={{ flex: 1, padding: "10px 8px", minWidth: "220px" }}>
+          {NAV.map((item) => {
+            const isActive = page === item.id;
             return (
               <button
-                key={n.id}
-                onClick={() => setPage(n.id)}
+                key={item.id}
+                onClick={() => setPage(item.id)}
                 onMouseEnter={(e) => {
-                  if (!active) {
-                    e.currentTarget.style.background = "rgba(124,77,255,0.06)";
-                    e.currentTarget.style.borderColor = "rgba(124,77,255,0.2)";
-                  }
+                  if (!isActive) e.currentTarget.style.background = "#f0f0f0";
                 }}
                 onMouseLeave={(e) => {
-                  if (!active) {
+                  if (!isActive)
                     e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.borderColor = "transparent";
-                  }
                 }}
                 style={{
                   width: "100%",
                   display: "flex",
                   alignItems: "center",
-                  gap: 12,
-                  padding: "11px 14px",
-                  borderRadius: 8,
-                  marginBottom: 4,
-                  border: active
-                    ? "1px solid rgba(124,77,255,0.35)"
-                    : "1px solid transparent",
-                  background: active ? "rgba(124,77,255,0.12)" : "transparent",
+                  gap: 10,
+                  padding: "9px 12px",
+                  borderRadius: 7,
+                  border: "none",
+                  background: isActive ? "#f5f5f5" : "transparent",
                   cursor: "pointer",
                   textAlign: "left",
                   position: "relative",
-                  boxShadow: active ? "0 0 20px rgba(124,77,255,0.2)" : "none",
-                  transition: "all 0.2s",
+                  transition: "all 0.15s",
+                  marginBottom: 2,
                 }}
               >
-                {active && (
+                {/* Active left bar */}
+                {isActive && (
                   <div
                     style={{
                       position: "absolute",
                       left: 0,
-                      top: "20%",
-                      height: "60%",
-                      width: 3,
-                      background: "#7c4dff",
-                      borderRadius: "0 3px 3px 0",
+                      top: "15%",
+                      height: "70%",
+                      width: 2.5,
+                      background: "#ffffff",
+                      borderRadius: "0 2px 2px 0",
                     }}
                   />
                 )}
+
+                <span style={{ fontSize: 15, flexShrink: 0 }}>{item.icon}</span>
+
                 <span
                   style={{
-                    fontSize: 16,
-                    opacity: active ? 1 : 0.5,
-                    color: active ? "#a78bfa" : "#9898b8",
+                    fontSize: 13,
+                    fontWeight: isActive ? 600 : 400,
+                    color: isActive ? "#111111" : "#666666",
+                    flex: 1,
                   }}
                 >
-                  {n.icon}
+                  {item.label}
                 </span>
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: active ? 600 : 400,
-                    color: active ? "#a78bfa" : "#9898b8",
-                  }}
-                >
-                  {n.label}
-                </span>
-                {n.id === "queue" && (
+
+                {item.badge && (
                   <span
                     style={{
-                      marginLeft: "auto",
-                      background: "#7c4dff",
-                      color: "#fff",
+                      background: "#ebebeb",
+                      color: "#555555",
                       fontSize: 10,
-                      fontWeight: 700,
-                      borderRadius: 10,
-                      padding: "1px 7px",
+                      fontWeight: 600,
+                      borderRadius: 8,
+                      padding: "1px 6px",
                     }}
                   >
-                    7
+                    {item.badge}
                   </span>
-                )}
-                {n.id === "dashboard" && (
-                  <span
-                    style={{
-                      marginLeft: "auto",
-                      width: 6,
-                      height: 6,
-                      borderRadius: "50%",
-                      background: "#00e5a0",
-                      boxShadow: "0 0 8px #00e5a0",
-                    }}
-                  />
                 )}
               </button>
             );
           })}
         </nav>
+
+        {/* Sidebar Footer */}
         <div
           style={{
-            padding: "16px 20px",
-            borderTop: "1px solid rgba(120,80,255,0.12)",
+            padding: "10px 8px",
+            borderTop: "1px solid #e0e0e0",
+            minWidth: "220px",
           }}
         >
+          {/* Clock */}
           <div
             style={{
               fontSize: 11,
-              color: "#6b6b8a",
+              color: "#aaaaaa",
               fontFamily: "monospace",
+              padding: "4px 12px",
               marginBottom: 8,
             }}
           >
@@ -226,15 +197,17 @@ export default function App() {
               second: "2-digit",
             })}
           </div>
+
+          {/* Online status */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: 7,
-              background: "rgba(0,229,160,0.08)",
-              border: "1px solid rgba(0,229,160,0.2)",
-              borderRadius: 6,
-              padding: "6px 10px",
+              background: "#f5faf5",
+              border: "1px solid #d1ead1",
+              borderRadius: 7,
+              padding: "7px 10px",
             }}
           >
             <div
@@ -242,27 +215,115 @@ export default function App() {
                 width: 6,
                 height: 6,
                 borderRadius: "50%",
-                background: "#00e5a0",
-                boxShadow: "0 0 8px #00e5a0",
+                background: "#22c55e",
+                boxShadow: "0 0 6px #22c55e",
+                flexShrink: 0,
               }}
             />
-            <span style={{ fontSize: 11, color: "#00e5a0", fontWeight: 500 }}>
+            <span style={{ fontSize: 11, color: "#555555", fontWeight: 500 }}>
               All Systems Online
             </span>
           </div>
         </div>
       </aside>
-      <main
+
+      {/* ── MAIN AREA ── */}
+      <div
         style={{
           flex: 1,
-          overflow: "auto",
-          background: "#050508",
-          width: "100%",
-          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
         }}
       >
-        {pages[page]}
-      </main>
+        {/* TOP BAR */}
+        <div
+          style={{
+            height: "52px",
+            background: "#ffffff",
+            borderBottom: "1px solid #e0e0e0",
+            display: "flex",
+            alignItems: "center",
+            padding: "0 16px",
+            gap: 14,
+            flexShrink: 0,
+          }}
+        >
+          {/* Hamburger */}
+          <button
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f0f0")}
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "transparent")
+            }
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: "6px 8px",
+              borderRadius: 6,
+              fontSize: 18,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.15s",
+              color: "#888888",
+            }}
+          >
+            ☰
+          </button>
+
+          {/* Logo */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 6,
+                background: "linear-gradient(135deg, #6d28d9, #2563eb)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 12,
+                fontWeight: 800,
+                color: "#fff",
+              }}
+            >
+              R
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 600, color: "#111111" }}>
+              ReelForge AI
+            </span>
+          </div>
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 20, background: "#e0e0e0" }} />
+
+          {/* Current page name */}
+          <span
+            style={{
+              fontSize: 13,
+              color: "#888888",
+              textTransform: "capitalize",
+            }}
+          >
+            {page}
+          </span>
+        </div>
+
+        {/* Page Content */}
+        <main
+          style={{
+            flex: 1,
+            overflow: "auto",
+            background: "#f5f5f5",
+            width: "100%",
+            boxSizing: "border-box",
+          }}
+        >
+          {pages[page]}
+        </main>
+      </div>
     </div>
   );
 }

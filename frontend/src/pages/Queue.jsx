@@ -22,14 +22,14 @@ export default function Queue() {
   });
 
   if (isLoading)
-    return <div style={{ padding: 32, color: "#6b6b8a" }}>Loading queue…</div>;
+    return <div style={{ padding: 32, color: "#666" }}>Loading queue…</div>;
 
   if (jobs.length === 0)
     return (
       <div
         style={{
           minHeight: "100vh",
-          background: "#050508",
+          background: "#ffffff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -38,10 +38,10 @@ export default function Queue() {
       >
         <div style={{ textAlign: "center" }}>
           <p style={{ fontSize: 64, marginBottom: 16 }}>🎬</p>
-          <p style={{ color: "#9898b8", fontSize: 18 }}>
+          <p style={{ color: "#444", fontSize: 18 }}>
             No reels awaiting review
           </p>
-          <p style={{ color: "#6b6b8a", fontSize: 13, marginTop: 8 }}>
+          <p style={{ color: "#888", fontSize: 13, marginTop: 8 }}>
             Trigger the pipeline from Settings
           </p>
         </div>
@@ -53,7 +53,7 @@ export default function Queue() {
       style={{
         padding: "28px 32px",
         minHeight: "100vh",
-        background: "#050508",
+        background: "#ffffff",
         fontFamily: "'Syne', sans-serif",
       }}
     >
@@ -62,13 +62,13 @@ export default function Queue() {
           style={{
             fontSize: 26,
             fontWeight: 700,
-            color: "#f0eeff",
+            color: "#111111",
             letterSpacing: "-0.5px",
           }}
         >
           🎬 Review Queue
         </h1>
-        <p style={{ color: "#6b6b8a", fontSize: 14, marginTop: 4 }}>
+        <p style={{ color: "#666", fontSize: 14, marginTop: 4 }}>
           {jobs.length} reel{jobs.length !== 1 ? "s" : ""} awaiting review
         </p>
       </div>
@@ -78,8 +78,8 @@ export default function Queue() {
           <div
             key={job.id}
             style={{
-              background: "#0d0d14",
-              border: "1px solid rgba(120,80,255,0.12)",
+              background: "#ffffff",
+              border: "1px solid #e5e5e5",
               borderRadius: 12,
               padding: 20,
               display: "flex",
@@ -106,14 +106,14 @@ export default function Queue() {
               <p
                 style={{
                   fontWeight: 700,
-                  color: "#f0eeff",
+                  color: "#111111",
                   fontSize: 15,
                   marginBottom: 6,
                 }}
               >
                 {job.script?.hook || job.script?.trend?.title || job.id}
               </p>
-              <p style={{ color: "#9898b8", fontSize: 13, marginBottom: 6 }}>
+              <p style={{ color: "#555", fontSize: 13, marginBottom: 6 }}>
                 {job.script?.body}
               </p>
               <div
@@ -127,24 +127,24 @@ export default function Queue() {
                 <span
                   style={{
                     fontSize: 11,
-                    color: "#6b6b8a",
+                    color: "#888",
                     fontFamily: "monospace",
                   }}
                 >
                   ID: {job.id}
                 </span>
-                <span style={{ fontSize: 11, color: "#ffb300" }}>
+                <span style={{ fontSize: 11, color: "#f59e0b" }}>
                   {job.status}
                 </span>
                 {job.script?.caption && (
-                  <span style={{ fontSize: 11, color: "#7c4dff" }}>
+                  <span style={{ fontSize: 11, color: "#2563eb" }}>
                     {job.script.caption}
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Approve / Reject Buttons */}
+            {/* Buttons */}
             <div
               style={{
                 display: "flex",
@@ -157,7 +157,7 @@ export default function Queue() {
                 onClick={() => approve.mutate(job.id)}
                 disabled={approve.isPending}
                 style={{
-                  background: "#00c853",
+                  background: "#22c55e",
                   color: "#fff",
                   border: "none",
                   borderRadius: 8,
@@ -175,8 +175,8 @@ export default function Queue() {
                 disabled={reject.isPending}
                 style={{
                   background: "transparent",
-                  color: "#ff4d6d",
-                  border: "1px solid #ff4d6d50",
+                  color: "#ef4444",
+                  border: "1px solid #ef444450",
                   borderRadius: 8,
                   padding: "10px 22px",
                   fontWeight: 600,
