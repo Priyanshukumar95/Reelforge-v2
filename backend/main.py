@@ -2,6 +2,7 @@
 # Run with: uvicorn main:app --reload --port 8000
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
@@ -22,7 +23,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="ReelForge API", lifespan=lifespan)
-
+app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:3000", "*"],
@@ -87,7 +88,7 @@ async def generate_video(req: GenerateRequest):
     return {
         "job_id": job_id,
         "status": "processing",
-        "videoUrl": "http://localhost:8000/outputs/something.mp4",
+        "videoUrl": "http://localhost:8000/outputs/test.mp4",
         "message": "Pipeline started. Check /api/queue for status.",
     }
 
