@@ -49,45 +49,31 @@ export default function Dashboard() {
       style={{
         padding: "28px 32px",
         minHeight: "100vh",
-        background: "#050508",
+        background: "#ffffff",
         fontFamily: "'Syne', sans-serif",
       }}
     >
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: 4,
-          }}
-        >
-          <h1
-            style={{
-              fontSize: 26,
-              fontWeight: 700,
-              color: "#f0eeff",
-              letterSpacing: "-0.5px",
-            }}
-          >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 700, color: "#111111" }}>
             Dashboard
           </h1>
           <span
             style={{
-              background: "rgba(0,229,160,0.1)",
-              border: "1px solid rgba(0,229,160,0.25)",
+              background: "#e6fff5",
+              border: "1px solid #b6f0d9",
               borderRadius: 20,
               padding: "3px 10px",
               fontSize: 11,
-              color: "#00e5a0",
+              color: "#00a86b",
               fontWeight: 600,
             }}
           >
             ● LIVE
           </span>
         </div>
-        <p style={{ color: "#6b6b8a", fontSize: 14 }}>
+        <p style={{ color: "#666666", fontSize: 14 }}>
           Your ReelForge AI pipeline at a glance — refreshes every 5s
         </p>
       </div>
@@ -102,16 +88,16 @@ export default function Dashboard() {
         }}
       >
         {[
-          { key: "total", label: "Generated", color: "#00d4ff" },
-          { key: "pending", label: "Pending", color: "#ffb300" },
-          { key: "published", label: "Published", color: "#00e5a0" },
-          { key: "failed", label: "Failed", color: "#ff4d6d" },
+          { key: "total", label: "Generated", color: "#2563eb" },
+          { key: "pending", label: "Pending", color: "#f59e0b" },
+          { key: "published", label: "Published", color: "#10b981" },
+          { key: "failed", label: "Failed", color: "#ef4444" },
         ].map((s) => (
           <div
             key={s.key}
             style={{
-              background: "#0d0d14",
-              border: "1px solid rgba(120,80,255,0.12)",
+              background: "#ffffff",
+              border: "1px solid #e5e5e5",
               borderRadius: 12,
               padding: "20px",
             }}
@@ -119,54 +105,36 @@ export default function Dashboard() {
             <div
               style={{
                 fontSize: 11,
-                color: "#6b6b8a",
+                color: "#666666",
                 letterSpacing: "1.5px",
-                fontWeight: 500,
                 marginBottom: 8,
               }}
             >
               {s.label.toUpperCase()}
             </div>
-            <div
-              style={{
-                fontSize: 32,
-                fontWeight: 700,
-                color: s.color,
-                lineHeight: 1,
-              }}
-            >
+            <div style={{ fontSize: 32, fontWeight: 700, color: s.color }}>
               {isLoading ? "…" : stats?.[s.key] ?? "0"}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Pipeline Progress */}
+      {/* Pipeline */}
       <div
         style={{
-          background: "#0d0d14",
-          border: "1px solid rgba(120,80,255,0.12)",
+          background: "#ffffff",
+          border: "1px solid #e5e5e5",
           borderRadius: 12,
           padding: "20px",
           marginBottom: 16,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 18,
-          }}
-        >
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#f0eeff" }}>
-            📋 Pipeline Progress
-          </span>
-          <span style={{ fontSize: 11, color: "#6b6b8a" }}>polls every 5s</span>
-        </div>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#111111" }}>
+          📋 Pipeline Progress
+        </span>
 
         {queueData.length === 0 && pipelineJobs.length === 0 ? (
-          <p style={{ color: "#6b6b8a", fontSize: 13 }}>
+          <p style={{ color: "#666666", fontSize: 13 }}>
             No pipeline running. Trigger from Settings!
           </p>
         ) : (
@@ -174,92 +142,26 @@ export default function Dashboard() {
             <div
               key={job.id}
               style={{
-                background: "#13131e",
-                border: "1px solid rgba(0,229,160,0.2)",
+                background: "#f9f9f9",
+                border: "1px solid #e5e5e5",
                 borderRadius: 10,
                 padding: "16px",
-                marginBottom: 12,
+                marginTop: 12,
               }}
             >
-              {/* Job Header */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: 12,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: "#a78bfa",
-                    fontFamily: "monospace",
-                  }}
-                >
-                  #{job.id?.slice(0, 8)}
-                </span>
-                <span
-                  style={{
-                    background: "rgba(0,229,160,0.1)",
-                    border: "1px solid rgba(0,229,160,0.3)",
-                    borderRadius: 6,
-                    padding: "2px 10px",
-                    fontSize: 11,
-                    color: "#00e5a0",
-                    fontWeight: 600,
-                  }}
-                >
-                  ✓ DONE
-                </span>
-              </div>
-
-              {/* Progress Bar */}
-              <div
-                style={{
-                  height: 4,
-                  background: "rgba(255,255,255,0.05)",
-                  borderRadius: 2,
-                  marginBottom: 14,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    width: "100%",
-                    background: "linear-gradient(90deg, #7c4dff, #00e5a0)",
-                    borderRadius: 2,
-                  }}
-                />
-              </div>
-
-              {/* Steps */}
               {PIPELINE_STEPS.map((step) => (
                 <div
                   key={step.key}
                   style={{
                     display: "flex",
-                    alignItems: "center",
-                    gap: 10,
+                    justifyContent: "space-between",
                     padding: "6px 0",
-                    borderBottom: "1px solid rgba(255,255,255,0.03)",
                   }}
                 >
-                  <div
-                    style={{
-                      width: 16,
-                      height: 16,
-                      borderRadius: 3,
-                      background: "rgba(0,229,160,0.2)",
-                      border: "1px solid rgba(0,229,160,0.4)",
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span style={{ fontSize: 12, color: "#9898b8", flex: 1 }}>
+                  <span style={{ fontSize: 12, color: "#444444" }}>
                     {step.label}
                   </span>
-                  <span style={{ fontSize: 11, color: "#00e5a0" }}>✓</span>
+                  <span style={{ fontSize: 11, color: "#10b981" }}>✓</span>
                 </div>
               ))}
             </div>
@@ -267,41 +169,21 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Live Activity Feed */}
+      {/* Activity */}
       <div
         style={{
-          background: "#0d0d14",
-          border: "1px solid rgba(120,80,255,0.12)",
+          background: "#ffffff",
+          border: "1px solid #e5e5e5",
           borderRadius: 12,
           padding: "20px",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 18,
-          }}
-        >
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#f0eeff" }}>
-            Live Activity
-          </span>
-          <span
-            style={{
-              background: "rgba(124,77,255,0.12)",
-              border: "1px solid rgba(124,77,255,0.25)",
-              borderRadius: 6,
-              padding: "3px 10px",
-              fontSize: 11,
-              color: "#a78bfa",
-            }}
-          >
-            Live
-          </span>
-        </div>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#111111" }}>
+          Live Activity
+        </span>
+
         {feed.length === 0 ? (
-          <p style={{ color: "#6b6b8a", fontSize: 13 }}>
+          <p style={{ color: "#666666", fontSize: 13 }}>
             Waiting for pipeline events…
           </p>
         ) : (
@@ -310,48 +192,15 @@ export default function Dashboard() {
               key={i}
               style={{
                 display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "10px 8px",
-                borderBottom:
-                  i < feed.length - 1
-                    ? "1px solid rgba(255,255,255,0.04)"
-                    : "none",
+                justifyContent: "space-between",
+                padding: "10px 0",
+                borderBottom: "1px solid #eee",
               }}
             >
-              <div
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: "#00e5a0",
-                  boxShadow: "0 0 8px #00e5a0",
-                  flexShrink: 0,
-                }}
-              />
-              <span
-                style={{
-                  flex: 1,
-                  fontSize: 12,
-                  color: "#9898b8",
-                  fontFamily: "monospace",
-                }}
-              >
+              <span style={{ fontSize: 12, color: "#444444" }}>
                 {j.title || j.id}
               </span>
-              <span
-                style={{
-                  fontSize: 11,
-                  padding: "2px 8px",
-                  borderRadius: 5,
-                  fontWeight: 500,
-                  background: "#00e5a020",
-                  border: "1px solid #00e5a050",
-                  color: "#00e5a0",
-                }}
-              >
-                {j.status}
-              </span>
+              <span style={{ fontSize: 11, color: "#10b981" }}>{j.status}</span>
             </div>
           ))
         )}

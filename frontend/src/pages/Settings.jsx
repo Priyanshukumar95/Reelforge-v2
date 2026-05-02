@@ -38,7 +38,7 @@ export default function Settings() {
       style={{
         padding: "28px 32px",
         minHeight: "100vh",
-        background: "#050508",
+        background: "#f5f5f5", // ✅ white bg
         fontFamily: "'Syne', sans-serif",
       }}
     >
@@ -47,13 +47,12 @@ export default function Settings() {
           style={{
             fontSize: 26,
             fontWeight: 700,
-            color: "#f0eeff",
-            letterSpacing: "-0.5px",
+            color: "#111111", // ✅ black text
           }}
         >
           ⚙️ Settings
         </h1>
-        <p style={{ color: "#6b6b8a", fontSize: 14, marginTop: 4 }}>
+        <p style={{ color: "#666666", fontSize: 14, marginTop: 4 }}>
           Configure publish schedule and pipeline
         </p>
       </div>
@@ -69,20 +68,20 @@ export default function Settings() {
         {/* Schedule */}
         <div
           style={{
-            background: "#0d0d14",
-            border: "1px solid rgba(120,80,255,0.12)",
+            background: "#ffffff",
+            border: "1px solid #e0e0e0",
             borderRadius: 12,
             padding: 24,
           }}
         >
-          <p style={{ fontWeight: 600, color: "#f0eeff", marginBottom: 18 }}>
+          <p style={{ fontWeight: 600, color: "#111111", marginBottom: 18 }}>
             Publish Schedule
           </p>
 
           <div style={{ marginBottom: 16 }}>
             <label
               style={{
-                color: "#9898b8",
+                color: "#555555",
                 fontSize: 13,
                 display: "block",
                 marginBottom: 8,
@@ -95,12 +94,11 @@ export default function Settings() {
               value={time}
               onChange={(e) => setTime(e.target.value)}
               style={{
-                background: "#13131e",
-                border: "1px solid rgba(120,80,255,0.2)",
+                background: "#f9f9f9",
+                border: "1px solid #ddd",
                 borderRadius: 8,
                 padding: "10px 14px",
-                color: "#f0eeff",
-                fontSize: 14,
+                color: "#111",
                 width: "100%",
               }}
             />
@@ -109,7 +107,7 @@ export default function Settings() {
           <div style={{ marginBottom: 20 }}>
             <label
               style={{
-                color: "#9898b8",
+                color: "#555555",
                 fontSize: 13,
                 display: "block",
                 marginBottom: 8,
@@ -124,12 +122,11 @@ export default function Settings() {
               value={max}
               onChange={(e) => setMax(e.target.value)}
               style={{
-                background: "#13131e",
-                border: "1px solid rgba(120,80,255,0.2)",
+                background: "#f9f9f9",
+                border: "1px solid #ddd",
                 borderRadius: 8,
                 padding: "10px 14px",
-                color: "#f0eeff",
-                fontSize: 14,
+                color: "#111",
                 width: "100%",
               }}
             />
@@ -140,13 +137,12 @@ export default function Settings() {
             disabled={save.isPending}
             style={{
               width: "100%",
-              background: "#7c4dff",
+              background: "#2563eb",
               color: "#fff",
               border: "none",
               borderRadius: 8,
               padding: "12px",
               fontWeight: 600,
-              fontSize: 14,
               cursor: "pointer",
               opacity: save.isPending ? 0.5 : 1,
             }}
@@ -157,7 +153,7 @@ export default function Settings() {
           {save.isSuccess && (
             <p
               style={{
-                color: "#00e5a0",
+                color: "#16a34a",
                 fontSize: 13,
                 textAlign: "center",
                 marginTop: 12,
@@ -171,37 +167,38 @@ export default function Settings() {
         {/* Pipeline */}
         <div
           style={{
-            background: "#0d0d14",
-            border: "1px solid rgba(120,80,255,0.12)",
+            background: "#ffffff",
+            border: "1px solid #e0e0e0",
             borderRadius: 12,
             padding: 24,
           }}
         >
-          <p style={{ fontWeight: 600, color: "#f0eeff", marginBottom: 16 }}>
+          <p style={{ fontWeight: 600, color: "#111111", marginBottom: 16 }}>
             Pipeline Control
           </p>
+
           <button
             onClick={() => trigger.mutate()}
             disabled={trigger.isPending}
             style={{
               width: "100%",
-              background: "#4a0080",
+              background: "#7c3aed",
               color: "#fff",
               border: "none",
               borderRadius: 8,
               padding: "12px",
               fontWeight: 600,
-              fontSize: 14,
               cursor: "pointer",
               opacity: trigger.isPending ? 0.5 : 1,
             }}
           >
             {trigger.isPending ? "Triggering…" : "▶️ Trigger Pipeline Now"}
           </button>
+
           {trigger.isSuccess && (
             <p
               style={{
-                color: "#00e5a0",
+                color: "#16a34a",
                 fontSize: 13,
                 textAlign: "center",
                 marginTop: 12,
@@ -210,7 +207,8 @@ export default function Settings() {
               Pipeline triggered ✅
             </p>
           )}
-          <p style={{ color: "#6b6b8a", fontSize: 11, marginTop: 12 }}>
+
+          <p style={{ color: "#777", fontSize: 11, marginTop: 12 }}>
             This will fetch trends → generate script → create reel → add to
             review queue
           </p>
