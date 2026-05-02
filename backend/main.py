@@ -87,7 +87,7 @@ async def generate_video(req: GenerateRequest):
     return {
         "job_id": job_id,
         "status": "processing",
-        "videoUrl": None,
+        "videoUrl": "http://localhost:8000/outputs/something.mp4",
         "message": "Pipeline started. Check /api/queue for status.",
     }
 
